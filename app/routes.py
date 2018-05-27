@@ -150,8 +150,13 @@ def get_future_balance():
     json request contains date of future
     :return:  List of transactions of the user
     """
-    date = request.json.date
-    balance = utils.get_future_balance(request.authorization["username"], date)
+    date = request.json["date"]
+    user = utils.get_user(request.authorization["username"])
+    balance = user.balance
+    t = datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+    days = (t - datetime.utcnow()).days
+    interest = (balance * 4)/(100*365)
+    balance = balance + interest
     return jsonify({"balance": balance})
 
 
