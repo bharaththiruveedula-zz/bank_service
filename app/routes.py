@@ -39,6 +39,15 @@ def index():
 
 @app.route('/register', methods=["POST"])
 def register():
+    """
+    Requires authentication and  json contains keys "amount"
+    json requests {
+        "username"
+        "password"
+        "email"
+    }
+    :return:
+    """
     user_info = request.json
     username = user_info["username"]
     hash = generate_password_hash(user_info["password"])
@@ -57,6 +66,15 @@ def get_balance():
 @app.route('/transfer', methods=['POST'])
 @auth.login_required
 def transfer_balance():
+    """
+    Requires authentication and  json contains keys "amount"
+    json requests{
+        "payee_name"
+        "amount"
+        "time" (Optional)
+    }
+    :return:
+    """
     user = utils.get_user(request.authorization["username"])
     transfer_details = request.json
     if transfer_details.get("time"):
@@ -72,6 +90,14 @@ def transfer_balance():
 @app.route('/add_beneficiary', methods=['POST'])
 @auth.login_required
 def add_beneficiary():
+    """
+    Requires authentication and  json contains keys "amount"
+    json request {
+        "name"
+        "account_no"
+    }
+    :return:
+    """
     payee_info = request.json
     user = utils.get_user(request.authorization["username"])
     utils.add_payee(payee_info, user)
@@ -81,6 +107,10 @@ def add_beneficiary():
 @app.route('/delete_beneficiary', methods=['DELETE'])
 @auth.login_required
 def delete_beneficiary():
+    """
+    Requires authentication and  json contains keys "amount"
+    :return: Either 404 if the user doesn't exists or deletes beneficiary
+    """
     payee_info = request.json
     payee = utils.get_payee(payee_info)
     utils.delete_payee(payee)
@@ -90,6 +120,11 @@ def delete_beneficiary():
 @app.route('/balance', methods=['POST'])
 @auth.login_required
 def add_balance():
+    """
+    Requires authentication and  json contains keys "amount"
+    :return: Either 404 if user doesn't exists or String "Congratulations, balance was updated!"
+
+    """
     user = utils.get_user(request.authorization["username"])
     amount = request.json["amount"]
     utils.add_balance(user, amount)
@@ -99,9 +134,25 @@ def add_balance():
 @app.route('/transactions', methods=['GET'])
 @auth.login_required
 def get_transactions():
+    """
+    GET /transactions
+    :return:  List of transactions of the user
+    """
     user = utils.get_user(request.authorization["username"])
     transactions = utils.get_transactions(user)
     return jsonify(transactions)
+
+@app.route('/future_balance', methods=['POST'])
+@auth.login_required
+def get_future_balance():
+    """
+    POST /future_balance
+    json request contains date of future
+    :return:  List of transactions of the user
+    """
+    date = request.json.date
+    balance = utils.get_future_balance(request.authorization["username"], date)
+    return jsonify({"balance": balance})
 
 
 

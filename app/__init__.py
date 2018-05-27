@@ -15,8 +15,11 @@ app.config.from_object(Config)
 app.redis = Redis.from_url(app.config['REDIS_URL'])
 queue = Queue('bank-service', connection=app.redis)
 scheduler = Scheduler(queue=queue, connection=Redis(host='localhost', port=6379, db=0))
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
+if app.config.get("DB_TYPE", "SQL") == "SQL":
+   db = SQLAlchemy(app)
+   migrate = Migrate(app, db)
+else:
+    db = connect(app.config.get("MONGODB_URI"), alias="bank-app")
 auth = HTTPBasicAuth()
 
 
